@@ -21,13 +21,15 @@ def meta_extract(pdf_path):
     }
 
     for line in lines_1:
-        print(line)
+        if "You must answer on the question paper" in line:
+            metadata["paper_type"] = "qp"
     
-    for line in lines_2:
-        print(line)
+    #for line in lines_2:
+     #   print(line)
     
     return metadata
 
 if __name__ == "__main__":
     print("This is a test\n")
-    meta_extract("C:\\Users\\gasse\\OneDrive\\Documents\\Practice\\Learning git\\Exam Organizer\\9709_s25_qp_53.pdf")
+    temp = meta_extract("C:\\Users\\gasse\\OneDrive\\Documents\\Practice\\Learning git\\Exam Organizer\\9709_s25_qp_53.pdf")
+    print(temp)
