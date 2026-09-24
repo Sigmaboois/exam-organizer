@@ -1,10 +1,19 @@
 from pypdf import PdfReader as reader
 
-input_path = input("Please input the path of ur file (paste in full directory if not in the same folder as reader.py)")
 
-pdfreader = reader(input_path)
-pagesinpdf = pdfreader.pages
+def pdf_reader(pdf_path):
 
-for page in pagesinpdf:
-    text = page.extract_text()
-    print(text)
+    page_texts = []
+    pdfreader = reader(pdf_path)
+    pagesinpdf = pdfreader.pages
+
+    for page in pagesinpdf:
+        text = page.extract_text()
+        page_texts.append(text)
+
+    return page_texts
+
+if __name__ == "__main__":
+    path = input("Input the PDF path:\n")
+    pdf_reader(path)
+    
