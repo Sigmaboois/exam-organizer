@@ -8,7 +8,7 @@ folders_path = ""
 info = reader.pdf_reader(pdf_path)
 metadata_info = parser.meta_extract(info)
 
-folders_path = f"{metadata_info['subject_name']}/{metadata_info['year']}/{metadata_info['session']}/{metadata_info['paper']}/{metadata_info['variant']}"
+folders_path = f"{metadata_info['subject_name']}/{metadata_info['year']}/{metadata_info['session']}/Paper {metadata_info['paper']}/Variant {metadata_info['variant']}"
 
 os.makedirs(folders_path,exist_ok=True)
 

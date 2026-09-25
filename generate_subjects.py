@@ -33,7 +33,7 @@ def generate_file():
             subject_name = extracted_name[0].rstrip()
         else:
             subject_name = extracted_name_temp
-        subjects[subject_code] = subject_name
+        subjects[subject_code] = subject_name.strip()
 
     with open(subjects_file,"w") as file:
         json.dump(subjects,file)
