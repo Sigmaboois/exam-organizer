@@ -1,5 +1,8 @@
 from pypdf import PdfReader as reader
 import re
+import json
+
+
 
 def meta_extract(pdf_path):
 
@@ -95,7 +98,10 @@ def meta_extract(pdf_path):
         metadata["session"] = session
         metadata["year"] = subsession[1]
     
-    
+    with open("subjects.json","r") as file:
+        subjects_code = json.load(file)
+
+        metadata["subject_name"] = subjects_code[metadata["subject_code"]]    
     return metadata
 
 if __name__ == "__main__":
