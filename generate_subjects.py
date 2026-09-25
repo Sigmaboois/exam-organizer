@@ -30,7 +30,7 @@ def generate_file():
         if "-" in extracted_name_temp:
             extracted_name = extracted_name_temp.split("-")
             del extracted_name[1]
-            subject_name = extracted_name[0]
+            subject_name = extracted_name[0].rstrip()
         else:
             subject_name = extracted_name_temp
         subjects[subject_code] = subject_name
