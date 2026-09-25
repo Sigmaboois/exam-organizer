@@ -1,19 +1,17 @@
-from pypdf import PdfReader as reader
+
 import re
 import json
 
 
 
-def meta_extract(pdf_path):
+def meta_extract(info):
 
-    # INITIALIZATION OF ALL VARIABLES BEFORE BEING ASSIGNED
-    pdf = reader(pdf_path)
-    
-    pages = pdf.pages
     pages_text = ""
 
-    for page in pages:
-        pages_text += page.extract_text() + "\n"
+    for page in info:
+        pages_text += page + "\n"
+        
+    pages_lines = pages_text.split("\n")
         
     pages_lines = pages_text.split("\n")
     
