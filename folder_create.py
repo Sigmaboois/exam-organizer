@@ -1,18 +1,19 @@
-import parser
-import reader
 import os
+import shutil
 
-pdf_path = "C:\\Users\\gasse\\Downloads\\0620_m25_qp_42.pdf"
-folders_path = ""
 
-info = reader.pdf_reader(pdf_path)
-metadata_info = parser.meta_extract(info)
+def create_exam_folder(pdf_path, metadata_info):
 
-folders_path = f"{metadata_info['subject_name']}/{metadata_info['year']}/{metadata_info['session']}/Paper {metadata_info['paper']}/Variant {metadata_info['variant']}"
+    folders_path = f"{metadata_info['subject_name']}/{metadata_info['year']}/{metadata_info['session']}/Paper {metadata_info['paper']}/Variant {metadata_info['variant']}"
 
-os.makedirs(folders_path,exist_ok=True)
+    file_name = f"{metadata_info['subject_name']}_{metadata_info['year']}_{metadata_info['session']}_{metadata_info['paper']}_{metadata_info['variant']}.pdf"
+
+    os.makedirs(folders_path, exist_ok=True)
+
+    destination = os.path.join(folders_path, file_name)
+
+    shutil.copy2(pdf_path, destination)
 
 
 if __name__ == "__main__":
-    print("This is a test")
-    print(folders_path)
+    print("folder_create.py")
