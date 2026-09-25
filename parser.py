@@ -36,6 +36,8 @@ def meta_extract(info):
 
         code_pattern = r"\d{4}/\d{2}/[A-Z]/[A-Z]/\d{2}"
 
+        code = None
+
         for line in pages_lines:
 
             match = re.search(code_pattern, line)
@@ -46,34 +48,71 @@ def meta_extract(info):
 
                 break
 
-        paper_variant = code[1]
+        if code is None:
 
-        paper, variant = paper_variant[0], paper_variant[1]
+            filename_pattern = r"(\d{4})_([smfw])(\d{2})_qp_(\d)(\d{1,2})"
 
-        if code[2] == "M":
+            for line in pages_lines:
 
-            session = "May-June"
+                match = re.search(filename_pattern, line, re.IGNORECASE)
 
-        elif code[2] == "F":
+                if match:
 
-            session = "February-March"
+                    metadata["subject_code"] = match.group(1)
+
+                    session_code = match.group(2).lower()
+                    metadata["year"] = "20" + match.group(3)
+
+                    metadata["paper"] = match.group(4)
+                    metadata["variant"] = match.group(5)
+
+                    if session_code == "m":
+
+                        metadata["session"] = "May-June"
+
+                    elif session_code == "f":
+
+                        metadata["session"] = "February-March"
+
+                    else:
+
+                        metadata["session"] = "October-November"
+
+                    break
 
         else:
 
-            session = "October-November"
+            paper_variant = code[1]
 
-        year = f"{str(20) + code[4]}"
+            paper, variant = paper_variant[0], paper_variant[1]
 
-        metadata["subject_code"] = code[0]
-        metadata["paper"] = paper
-        metadata["variant"] = variant
-        metadata["session"] = session
-        metadata["year"] = year
+            if code[2] == "M":
+
+                session = "May-June"
+
+            elif code[2] == "F":
+
+                session = "February-March"
+
+            else:
+
+                session = "October-November"
+
+            year = "20" + code[4]
+
+            metadata["subject_code"] = code[0]
+            metadata["paper"] = paper
+            metadata["variant"] = variant
+            metadata["session"] = session
+            metadata["year"] = year
 
     elif metadata["paper_type"] == "MS":
 
         subpattern = r"\d{4}/\d{2}"
         sessionpattern = r"[A-Za-z]+/[A-Za-z]+\s*\d{4}"
+
+        subcode = None
+        subsession = None
 
         for line in pages_lines:
 
@@ -95,29 +134,39 @@ def meta_extract(info):
 
                 break
 
-        metadata["subject_code"] = subcode[0]
+        if subcode is not None:
 
-        paper_variant = subcode[1]
+            metadata["subject_code"] = subcode[0]
 
-        paper, variant = paper_variant[0], paper_variant[1]
+            paper_variant = subcode[1]
 
-        metadata["paper"] = paper
-        metadata["variant"] = variant
+            paper, variant = paper_variant[0], paper_variant[1]
 
-        if subsession[0] == "October/November":
+            metadata["paper"] = paper
+            metadata["variant"] = variant
 
-            session = "October-November"
+        if subsession is not None:
 
-        elif subsession[0] == "May/June":
+            if subsession[0] == "October/November":
 
-            session = "May-June"
+                session = "October-November"
 
-        else:
+            elif subsession[0] == "May/June":
 
-            session = "February-March"
+                session = "May-June"
 
-        metadata["session"] = session
-        metadata["year"] = subsession[1]
+            else:
+
+                session = "February-March"
+
+            metadata["session"] = session
+            metadata["year"] = subsession[1]
+
+    if metadata["subject_code"] is None:
+
+        print("Could not find the subject code in the PDF.")
+        print("Paper type:", metadata["paper_type"])
+        return metadata
 
     with open("subjects.json", "r") as file:
 
