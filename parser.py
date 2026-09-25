@@ -1,17 +1,18 @@
 from pypdf import PdfReader as reader
+import re
 
 def meta_extract(pdf_path):
 
     # INITIALIZATION OF ALL VARIABLES BEFORE BEING ASSIGNED
     pdf = reader(pdf_path)
     
-    page_1 = pdf.pages[0]
-    page_1_text = page_1.extract_text()
-    lines_1 = page_1_text.split("\n")
-    
-    last_page = pdf.pages[-1]
-    last_page_text = last_page.extract_text()
-    last_lines = last_page_text.split("\n")
+    pages = pdf.pages
+    pages_text = ""
+
+    for page in pages:
+        pages_text += page.extract_text() + "\n"
+        
+    pages_lines = pages_text.split("\n")
     
     metadata = {
         "year":None,
@@ -27,7 +28,7 @@ def meta_extract(pdf_path):
     #______________________________________________________________________________________________________________
 
     #For the paper_type key -->
-    for line in lines_1:
+    for line in pages_lines:
         if "You must answer on the question paper" in line:
             metadata["paper_type"] = "QP"
         elif "MARK SCHEME" in line:
@@ -35,45 +36,72 @@ def meta_extract(pdf_path):
     
     # Extraction based on the fact that paper_type = QP
     if metadata["paper_type"] ==  "QP": 
-        code = last_lines[1]
-        code = code.split("/")
-        year_expression = code[5]
-        yearsplitted = year_expression.split()
-        year = yearsplitted[2]
-        subject_name,subject_code = lines_1[3].split()
-        subject_code,paper = subject_code.split("/")
-        paper,variant = paper[0],paper[1]
+        code_pattern = r"\d{4}/\d{2}/[A-Z]/[A-Z]/\d{2}"
+        for line in pages_lines:
+            match = re.search(code_pattern,line)
+            if match:
+                code = match.group().split("/")
+                break
+        
+        paper_variant = code[1]
+        paper,variant = paper_variant[0],paper_variant[1]
 
-        metadata["session"] = code[2]
-        metadata["subject_name"] = subject_name
-        metadata["subject_code"] = subject_code
+        if code[2] == "M":
+            session = "May/June"
+        elif code[2] == "F":
+            session = "Febuarary/March"
+        else:
+            session = "Octover/November"
+
+        year = f"{str(20)+code[4]}"
+        
+        metadata["subject_code"] = code[0]
         metadata["paper"] = paper
         metadata["variant"] = variant
+        metadata["session"] = session
         metadata["year"] = year
 
+    
     elif metadata["paper_type"] == "MS":
+        # All in all
+        subpattern = r"\d{4}/\d{2}"
+        sessionpattern = r"[A-Za-z]+/[A-Za-z]+\s*\d{4}"
+
+        for line in pages_lines:
+            ismatch = re.search(subpattern,line)
+            if ismatch:
+                subcode = ismatch.group().split("/")
+                break
         
-        # Subject Name Extraction from MS
-        subject_name_splitted = lines_1[12].split()
-        subject_name = subject_name_splitted[0]
-        metadata["subject_name"] = subject_name
+        for line in pages_lines:
+            issession = re.search(sessionpattern,line)
+            if issession:
+                subsession = issession.group().split()
+                break
 
-        # Subject Code Extraction from MS
-        subject_code_splitted = subject_name_splitted[1].split("/")
-        subject_code = subject_code_splitted[0]
-        metadata["subject_code"] = subject_code
+        metadata["subject_code"] = subcode[0]
 
-        # Paper and variant extraction
-        paper_variant = subject_code_splitted[1]
-        paper = paper_variant[0]
-        variant = paper_variant[1]
+        paper_variant = subcode[1]
+        paper,variant = paper_variant[0],paper_variant[1]
         metadata["paper"] = paper
         metadata["variant"] = variant
 
+        if subsession[0] == "October/November":
+            session = "October/November"
+        elif subsession[0] == "May/June":
+            session = "May/June"
+        else:
+            session = "Febuarary/March"
+        metadata["session"] = session
+        metadata["year"] = subsession[1]
+    
+    
     return metadata
 
 if __name__ == "__main__":
     print("This is a test\n")
-    metadata= meta_extract("9709_w20_ms_12.pdf")
+    path = input("Please input the full path of the file:\n")
+
+    metadata= meta_extract(path)
     print(metadata)
     
